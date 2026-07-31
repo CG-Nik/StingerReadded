@@ -1,6 +1,7 @@
 # StingerReadded
 This mod adds Stinger, an unused skill, back into the game.  
 This mod needs to be on both the Client and the Server to work properly.  
+This mod requires that you also have https://github.com/CG-Nik/CustomSkillsAPI downloaded to work properly.  
 
 Specifically, this mod adds a "Progression Slot" for Stinger to the Warrior Shrine's skill tree.  
 Progression Slots are the physical bubble that represents a skill and allows you to obtain it through normal gameplay.  
