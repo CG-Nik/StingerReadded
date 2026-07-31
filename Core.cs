@@ -1,0 +1,82 @@
+﻿using MelonLoader;
+using System.Reflection;
+using CustomSkillsAPI;
+using UnityEngine;
+
+[assembly: MelonInfo(typeof(StingerReadded.Core), "StingerReadded", "1.0.0", "CGNik", null)]
+[assembly: MelonGame("Alta", "A Township Tale")]
+
+namespace StingerReadded
+{
+    public class Core : MelonMod
+    {
+        private List<ProgressionSlot> progressionSlots = [];
+
+        public override void OnInitializeMelon()
+        {
+            LoggerInstance.Msg("Initialized.");
+
+            CustomSkillsAPI.Core.SetUpProgressionSlots += _SetUpProgressionSlots;
+            CustomSkillsAPI.Core.AddProgressionSlots += _AddProgressionSlots;
+            CustomSkillsAPI.Core.AddInherits += _AddInherits;
+        }
+
+        private void _SetUpProgressionSlots()
+        {
+            ProfessionSkill customSkill = ProfessionSkill.All.Where(skill => skill.Hash == 60198u).First();
+            ProgressionSlot progressionSlot = new(customSkill);
+            progressionSlot.Path = ProgressionPath.Melee;
+            foreach (var fieldInfo in progressionSlot.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
+            {
+                switch (fieldInfo.Name)
+                {
+                    case "name":
+                        fieldInfo.SetValue(progressionSlot, "Power Stinger");
+                        break;
+                    case "cost":
+                        fieldInfo.SetValue(progressionSlot, 1u);
+                        break;
+                    case "dependencies":
+                        fieldInfo.SetValue(progressionSlot, new List<uint>([32655u]));
+                        break;
+                    case "hash":
+                        fieldInfo.SetValue(progressionSlot, 60870u + 1u);
+                        break;
+                    case "position":
+                        fieldInfo.SetValue(progressionSlot, (2 * new Vector3(-0.176f, 0.515f, 0.223f)) - new Vector3(0, 0.335f, 0.227f));
+                        break;
+                    case "slotIcon":
+                        fieldInfo.SetValue(progressionSlot, null);
+                        break;
+                    case "inheritSlots":
+                        fieldInfo.SetValue(progressionSlot, new List<ProgressionSlot>([]));
+                        break;
+                    default:
+                        break;
+                }
+            }
+            progressionSlot.GetType().GetField("indentLevel", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(progressionSlot, progressionSlot.GetIndentLevel(ProfessionSkillTree.GetProfessionTree(progressionSlot.Path)));
+            progressionSlots.Add(progressionSlot);
+        }
+
+        private void _AddProgressionSlots()
+        {
+            foreach (ProgressionSlot progressionSlot in progressionSlots)
+            {
+                ProfessionSkillTree professionSkillTree = ProfessionSkillTree.GetProfessionTree(progressionSlot.Path);
+
+                Dictionary<uint, ProgressionSlot> slotMap = (Dictionary<uint, ProgressionSlot>)professionSkillTree.GetType().GetField("slotMap", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(professionSkillTree);
+                slotMap[progressionSlot.Hash] = progressionSlot;
+                professionSkillTree.Slots.Add(progressionSlot);
+            }
+        }
+
+        private void _AddInherits()
+        {
+            foreach (ProgressionSlot progressionSlot in progressionSlots)
+            {
+                progressionSlot.AddInherit(ProfessionSkillTree.GetProfessionTree(progressionSlot.Path));
+            }
+        }
+    }
+}
