@@ -13,3 +13,5 @@ This is an unofficial, fan-made mod for A Township Tale. This mod is not affilia
 Download StingerReadded.dll and StingerReadded.zip off of the most recent release.  
 Place StingerReadded.dll into the Mods folder.  
 Extract StingerReadded.zip, and place the resulting StingerReadded folder into the Mods folder.  
+> [!NOTE]
+> StingerReadded.zip is NOT nested, you need to place the StingerReadded folder itself into the Mods folder, not the AssetBundles folder found inside of it.  
