@@ -23,24 +23,56 @@ namespace StingerReadded
 
         private void _SetUpProgressionSlots()
         {
-            ProfessionSkill customSkill = ProfessionSkill.All.Where(skill => skill.Hash == 60198u).First();
-            ProgressionSlot progressionSlot = new(customSkill);
+            ProfessionSkill professionSkill = ProfessionSkill.All.Where(skill => skill.Hash == 60198u).First(); // this is PowerStinger
+            PowerStinger powerStinger = professionSkill as PowerStinger;
+
+            // adds SFX for when you charge it
+            SkillInputStructure inputStructure = powerStinger.InputStructure;
+            PowerCrossSlash powerCrossSlash = ProfessionSkill.All.Where(skill => skill.Hash == 31900u).First() as PowerCrossSlash;  // this PowerCrossSlash
+            SkillInputStructure inputStructurePCS = powerCrossSlash.InputStructure;
+            foreach (var fieldInfo in typeof(SkillInputStructure).GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
+            {
+                switch (fieldInfo.Name)
+                {
+                    case "chargedDefaultEffect":
+                        fieldInfo.SetValue(inputStructure, typeof(SkillInputStructure).GetField("chargedDefaultEffect", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(inputStructurePCS));
+                        break;
+                    case "canceledDefaultEffect":
+                        fieldInfo.SetValue(inputStructure, typeof(SkillInputStructure).GetField("canceledDefaultEffect", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(inputStructurePCS));
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // makes the correct achievement trigger when you obtain PowerStinger
+            typeof(ProfessionSkill).GetField("targetAchievement", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(professionSkill,
+                GameAchievement.All.Where(achievement => achievement.Hash == 7222u).First() // this is "Unlock a High Level Melee Skill"
+            );
+
+            // makes the orb visible
+            PooledObjectDefinition targetDefinition = (PooledObjectDefinition)powerStinger.GetType().GetField("targetDefinition", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerStinger);
+            PooledObject prefab = (PooledObject)targetDefinition.GetType().GetField("prefab", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(targetDefinition);
+            GameObject stingerTargetOrb = (prefab as SkillHitTarget).gameObject;
+            stingerTargetOrb.transform.Find("Orb windows").gameObject.SetActive(true);
+
+            ProgressionSlot progressionSlot = new(professionSkill);
             progressionSlot.Path = ProgressionPath.Melee;
             foreach (var fieldInfo in progressionSlot.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
             {
                 switch (fieldInfo.Name)
                 {
                     case "name":
-                        fieldInfo.SetValue(progressionSlot, "Power Stinger");
+                        fieldInfo.SetValue(progressionSlot, "Power Stinger Readded");
                         break;
                     case "cost":
                         fieldInfo.SetValue(progressionSlot, 1u);
                         break;
                     case "dependencies":
-                        fieldInfo.SetValue(progressionSlot, new List<uint>([32655u]));
+                        fieldInfo.SetValue(progressionSlot, new List<uint>([32655u])); // this is PowerHit
                         break;
                     case "hash":
-                        fieldInfo.SetValue(progressionSlot, 60870u + 1u);
+                        fieldInfo.SetValue(progressionSlot, 3671701u);
                         break;
                     case "position":
                         fieldInfo.SetValue(progressionSlot, (2 * new Vector3(-0.176f, 0.515f, 0.223f)) - new Vector3(0, 0.335f, 0.227f));
