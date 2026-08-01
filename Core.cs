@@ -2,6 +2,7 @@
 using System.Reflection;
 using CustomSkillsAPI;
 using UnityEngine;
+using MelonLoader.Utils;
 
 [assembly: MelonInfo(typeof(StingerReadded.Core), "StingerReadded", "1.0.0", "CGNik", null)]
 [assembly: MelonGame("Alta", "A Township Tale")]
@@ -78,7 +79,8 @@ namespace StingerReadded
                         fieldInfo.SetValue(progressionSlot, (2 * new Vector3(-0.176f, 0.515f, 0.223f)) - new Vector3(0, 0.335f, 0.227f));
                         break;
                     case "slotIcon":
-                        fieldInfo.SetValue(progressionSlot, null);
+                        AssetBundle assetBundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory, "StingerReadded/AssetBundles/modassetbundles.custom skill"));
+                        fieldInfo.SetValue(progressionSlot, assetBundle.LoadAsset("StingerSlotIcon"));
                         break;
                     case "inheritSlots":
                         fieldInfo.SetValue(progressionSlot, new List<ProgressionSlot>([]));
