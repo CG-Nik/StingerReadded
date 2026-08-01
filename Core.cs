@@ -80,7 +80,12 @@ namespace StingerReadded
                         break;
                     case "slotIcon":
                         AssetBundle assetBundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory, "StingerReadded/AssetBundles/modassetbundles.custom skill"));
-                        fieldInfo.SetValue(progressionSlot, assetBundle.LoadAsset("StingerSlotIcon"));
+                        Texture2D texture = null;
+                        if (assetBundle)
+                        {
+                            texture = assetBundle.LoadAsset<Texture2D>("StingerSlotIcon");
+                        }
+                        fieldInfo.SetValue(progressionSlot, texture);
                         break;
                     case "inheritSlots":
                         fieldInfo.SetValue(progressionSlot, new List<ProgressionSlot>([]));
