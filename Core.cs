@@ -83,7 +83,7 @@ namespace StingerReadded
                         Texture2D texture = null;
                         if (assetBundle)
                         {
-                            texture = assetBundle.LoadAsset<Texture2D>("StingerSlotIcon");
+                            texture = assetBundle.LoadAsset<Texture2D>("StingerSlotIconV2");
                         }
                         fieldInfo.SetValue(progressionSlot, texture);
                         break;
