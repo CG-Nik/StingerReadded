@@ -3,6 +3,7 @@ using System.Reflection;
 using CustomSkillsAPI;
 using UnityEngine;
 using MelonLoader.Utils;
+using Alta.Inventory;
 
 [assembly: MelonInfo(typeof(StingerReadded.Core), "StingerReadded", "1.0.0", "CGNik", null)]
 [assembly: MelonGame("Alta", "A Township Tale")]
@@ -26,25 +27,6 @@ namespace StingerReadded
         {
             ProfessionSkill professionSkill = ProfessionSkill.All.Where(skill => skill.Hash == 60198u).First(); // this is PowerStinger
             PowerStinger powerStinger = professionSkill as PowerStinger;
-
-            // adds SFX for when you charge it
-            SkillInputStructure inputStructure = powerStinger.InputStructure;
-            PowerCrossSlash powerCrossSlash = ProfessionSkill.All.Where(skill => skill.Hash == 31900u).First() as PowerCrossSlash;  // this PowerCrossSlash
-            SkillInputStructure inputStructurePCS = powerCrossSlash.InputStructure;
-            foreach (var fieldInfo in typeof(SkillInputStructure).GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
-            {
-                switch (fieldInfo.Name)
-                {
-                    case "chargedDefaultEffect":
-                        fieldInfo.SetValue(inputStructure, typeof(SkillInputStructure).GetField("chargedDefaultEffect", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(inputStructurePCS));
-                        break;
-                    case "canceledDefaultEffect":
-                        fieldInfo.SetValue(inputStructure, typeof(SkillInputStructure).GetField("canceledDefaultEffect", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(inputStructurePCS));
-                        break;
-                    default:
-                        break;
-                }
-            }
 
             // makes the correct achievement trigger when you obtain PowerStinger
             typeof(ProfessionSkill).GetField("targetAchievement", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(professionSkill,
@@ -79,11 +61,11 @@ namespace StingerReadded
                         fieldInfo.SetValue(progressionSlot, (2 * new Vector3(-0.176f, 0.515f, 0.223f)) - new Vector3(0, 0.335f, 0.227f));
                         break;
                     case "slotIcon":
-                        AssetBundle assetBundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory, "StingerReadded/AssetBundles/modassetbundles.custom skill"));
+                        AssetBundle assetBundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory, "StingerReadded/AssetBundles/!stingerreadded"));
                         Texture2D texture = null;
                         if (assetBundle)
                         {
-                            texture = assetBundle.LoadAsset<Texture2D>("StingerSlotIconV2");
+                            texture = assetBundle.LoadAsset<Texture2D>("StingerSlotIconV4");
                         }
                         fieldInfo.SetValue(progressionSlot, texture);
                         break;
