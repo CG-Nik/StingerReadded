@@ -1,9 +1,10 @@
-﻿using MelonLoader;
-using System.Reflection;
-using CustomSkillsAPI;
-using UnityEngine;
-using MelonLoader.Utils;
+﻿using Alta;
 using Alta.Inventory;
+using CustomSkillsAPI;
+using MelonLoader;
+using MelonLoader.Utils;
+using System.Reflection;
+using UnityEngine;
 
 [assembly: MelonInfo(typeof(StingerReadded.Core), "StingerReadded", "1.0.0", "CGNik", null)]
 [assembly: MelonGame("Alta", "A Township Tale")]
@@ -25,11 +26,61 @@ namespace StingerReadded
 
         private void _SetUpProgressionSlots()
         {
-            ProfessionSkill professionSkill = ProfessionSkill.All.Where(skill => skill.Hash == 60198u).First(); // this is PowerStinger
-            PowerStinger powerStinger = professionSkill as PowerStinger;
+            AssetBundle assetBundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory, "StingerReadded/AssetBundles/!stingerreadded"));
+
+            // SIDE POWER HIT
+            //
+            ProfessionSkill professionSkill_SidePowerHit = assetBundle.LoadAsset<ProfessionSkill>("Side Power Hit.asset");
+            PowerHit sidePowerHit = professionSkill_SidePowerHit as PowerHit;
+
+            typeof(PowerHit).GetField("targetImpactChannel", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit, typeof(PowerHit).GetField("targetImpactChannel", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(ProfessionSkill.All.Where(skill => skill.Hash == 51076u).First() as PowerHit));
+            typeof(PickupBasedSkill).GetField("inputStructure", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit, typeof(PickupBasedSkill).GetField("inputStructure", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(ProfessionSkill.All.Where(skill => skill.Hash == 60198u).First() as PowerStinger));
+
+            ProfessionSkill.CheckItems();
+            Dictionary<uint, ProfessionSkill> items = (Dictionary<uint, ProfessionSkill>)typeof(HashedGeneralValue<ProfessionSkill>).GetField("items", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
+            items.Add(professionSkill_SidePowerHit.Hash, professionSkill_SidePowerHit);
+            ProgressionSlot progressionSlot_SidePowerHit = new(professionSkill_SidePowerHit);
+            foreach (var fieldInfo in progressionSlot_SidePowerHit.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
+            {
+                switch (fieldInfo.Name)
+                {
+                    case "name":
+                        fieldInfo.SetValue(progressionSlot_SidePowerHit, "Side Power Hit");
+                        break;
+                    case "cost":
+                        fieldInfo.SetValue(progressionSlot_SidePowerHit, 1u);
+                        break;
+                    case "dependencies":
+                        fieldInfo.SetValue(progressionSlot_SidePowerHit, new List<uint>([7141u]));
+                        break;
+                    case "hash":
+                        fieldInfo.SetValue(progressionSlot_SidePowerHit, 51077u);
+                        break;
+                    case "position":
+                        fieldInfo.SetValue(progressionSlot_SidePowerHit, new Vector3(0, 0.1f, 0.1f));
+                        break;
+                    case "slotIcon":
+                        Texture2D texture = null;
+                        if (assetBundle)
+                        {
+                            texture = assetBundle.LoadAsset<Texture2D>("SidePowerHitSlotIcon.png");
+                        }
+                        fieldInfo.SetValue(progressionSlot_SidePowerHit, texture);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            progressionSlot_SidePowerHit.Validate(ProfessionSkillTree.GetProfessionTree(ProgressionPath.Melee));
+            progressionSlots.Add(progressionSlot_SidePowerHit);
+
+            // STINGER
+            //
+            ProfessionSkill professionSkill_PowerStinger = ProfessionSkill.All.Where(skill => skill.Hash == 60198u).First(); // this is PowerStinger
+            PowerStinger powerStinger = professionSkill_PowerStinger as PowerStinger;
 
             // makes the correct achievement trigger when you obtain PowerStinger
-            typeof(ProfessionSkill).GetField("targetAchievement", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(professionSkill,
+            typeof(ProfessionSkill).GetField("targetAchievement", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(professionSkill_PowerStinger,
                 GameAchievement.All.Where(achievement => achievement.Hash == 7222u).First() // this is "Unlock a High Level Melee Skill"
             );
 
@@ -39,45 +90,40 @@ namespace StingerReadded
             GameObject stingerTargetOrb = (prefab as SkillHitTarget).gameObject;
             stingerTargetOrb.transform.Find("Orb windows").gameObject.SetActive(true);
 
-            ProgressionSlot progressionSlot = new(professionSkill);
-            progressionSlot.Path = ProgressionPath.Melee;
-            foreach (var fieldInfo in progressionSlot.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
+            ProgressionSlot progressionSlot_PowerStinger = new(professionSkill_PowerStinger);
+            foreach (var fieldInfo in progressionSlot_PowerStinger.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
             {
                 switch (fieldInfo.Name)
                 {
                     case "name":
-                        fieldInfo.SetValue(progressionSlot, "Power Stinger Readded");
+                        fieldInfo.SetValue(progressionSlot_PowerStinger, "Power Stinger Readded");
                         break;
                     case "cost":
-                        fieldInfo.SetValue(progressionSlot, 1u);
+                        fieldInfo.SetValue(progressionSlot_PowerStinger, 1u);
                         break;
                     case "dependencies":
-                        fieldInfo.SetValue(progressionSlot, new List<uint>([32655u])); // this is PowerHit
+                        fieldInfo.SetValue(progressionSlot_PowerStinger, new List<uint>([51077u])); // this is SidePowerHit
                         break;
                     case "hash":
-                        fieldInfo.SetValue(progressionSlot, 3671701u);
+                        fieldInfo.SetValue(progressionSlot_PowerStinger, 60199u);
                         break;
                     case "position":
-                        fieldInfo.SetValue(progressionSlot, (2 * new Vector3(-0.176f, 0.515f, 0.223f)) - new Vector3(0, 0.335f, 0.227f));
+                        fieldInfo.SetValue(progressionSlot_PowerStinger, new Vector3(0, 0.1f, 0.3f));
                         break;
                     case "slotIcon":
-                        AssetBundle assetBundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory, "StingerReadded/AssetBundles/!stingerreadded"));
                         Texture2D texture = null;
                         if (assetBundle)
                         {
-                            texture = assetBundle.LoadAsset<Texture2D>("StingerSlotIconV4");
+                            texture = assetBundle.LoadAsset<Texture2D>("StingerSlotIcon.png");
                         }
-                        fieldInfo.SetValue(progressionSlot, texture);
-                        break;
-                    case "inheritSlots":
-                        fieldInfo.SetValue(progressionSlot, new List<ProgressionSlot>([]));
+                        fieldInfo.SetValue(progressionSlot_PowerStinger, texture);
                         break;
                     default:
                         break;
                 }
             }
-            progressionSlot.GetType().GetField("indentLevel", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(progressionSlot, progressionSlot.GetIndentLevel(ProfessionSkillTree.GetProfessionTree(progressionSlot.Path)));
-            progressionSlots.Add(progressionSlot);
+            progressionSlot_PowerStinger.Validate(ProfessionSkillTree.GetProfessionTree(ProgressionPath.Melee));
+            progressionSlots.Add(progressionSlot_PowerStinger);
         }
 
         private void _AddProgressionSlots()
