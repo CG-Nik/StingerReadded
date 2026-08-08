@@ -13,15 +13,11 @@ namespace StingerReadded
 {
     public class Core : MelonMod
     {
-        private List<ProgressionSlot> progressionSlots = [];
-
         public override void OnInitializeMelon()
         {
             LoggerInstance.Msg("Initialized.");
 
             CustomSkillsAPI.Core.SetUpProgressionSlots += _SetUpProgressionSlots;
-            CustomSkillsAPI.Core.AddProgressionSlots += _AddProgressionSlots;
-            CustomSkillsAPI.Core.AddInherits += _AddInherits;
         }
 
         private void _SetUpProgressionSlots()
@@ -33,12 +29,30 @@ namespace StingerReadded
             ProfessionSkill professionSkill_SidePowerHit = assetBundle.LoadAsset<ProfessionSkill>("Side Power Hit.asset");
             PowerHit sidePowerHit = professionSkill_SidePowerHit as PowerHit;
 
-            typeof(PowerHit).GetField("targetImpactChannel", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit, typeof(PowerHit).GetField("targetImpactChannel", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(ProfessionSkill.All.Where(skill => skill.Hash == 51076u).First() as PowerHit));
-            typeof(PickupBasedSkill).GetField("inputStructure", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit, typeof(PickupBasedSkill).GetField("inputStructure", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(ProfessionSkill.All.Where(skill => skill.Hash == 60198u).First() as PowerStinger));
+            PowerHit powerHit = ProfessionSkill.All.Where(skill => skill.Hash == 51076u).First() as PowerHit;
+            PowerStinger powerStinger = ProfessionSkill.All.Where(skill => skill.Hash == 60198u).First() as PowerStinger;
 
-            ProfessionSkill.CheckItems();
-            Dictionary<uint, ProfessionSkill> items = (Dictionary<uint, ProfessionSkill>)typeof(HashedGeneralValue<ProfessionSkill>).GetField("items", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
-            items.Add(professionSkill_SidePowerHit.Hash, professionSkill_SidePowerHit);
+            typeof(PowerHit).GetField("targetImpactChannel", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit,
+                typeof(PowerHit).GetField("targetImpactChannel", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerHit) // this is CombatImpactChannel
+            );
+            typeof(PickupBasedSkill).GetField("inputStructure", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit, 
+                typeof(PickupBasedSkill).GetField("inputStructure", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerStinger) // this is HandOnSideStructure
+            );
+            typeof(ProfessionSkill).GetField("practiceGlyphSprites", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit, 
+                new Sprite[2]
+                {
+                    ((Sprite[])typeof(ProfessionSkill).GetField("practiceGlyphSprites", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerStinger))[0], // this is Glyph_Ability_HoldSideBack
+                    ((Sprite[])typeof(ProfessionSkill).GetField("practiceGlyphSprites", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerHit))[1] // this is Glyph_AbilityHitTrigger
+                }
+            );
+            typeof(PickupBasedSkill).GetField("hitPositionEffect", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit,
+                typeof(PickupBasedSkill).GetField("hitPositionEffect", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerHit)
+            );
+            typeof(PickupBasedSkill).GetField("hitPositionAndBladeAlignedEffect", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit,
+                typeof(PickupBasedSkill).GetField("hitPositionAndBladeAlignedEffect", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerHit)
+            );
+
+            CustomSkillsAPI.Core.RegisterProfessionSkill(professionSkill_SidePowerHit);
             ProgressionSlot progressionSlot_SidePowerHit = new(professionSkill_SidePowerHit);
             foreach (var fieldInfo in progressionSlot_SidePowerHit.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
             {
@@ -72,12 +86,12 @@ namespace StingerReadded
                 }
             }
             progressionSlot_SidePowerHit.Validate(ProfessionSkillTree.GetProfessionTree(ProgressionPath.Melee));
-            progressionSlots.Add(progressionSlot_SidePowerHit);
+            CustomSkillsAPI.Core.progressionSlots.Add(progressionSlot_SidePowerHit);
 
             // STINGER
             //
             ProfessionSkill professionSkill_PowerStinger = ProfessionSkill.All.Where(skill => skill.Hash == 60198u).First(); // this is PowerStinger
-            PowerStinger powerStinger = professionSkill_PowerStinger as PowerStinger;
+            // PowerStinger powerStinger = professionSkill_PowerStinger as PowerStinger; this would be set here, but it's already set from SidePowerHit using it
 
             // makes the correct achievement trigger when you obtain PowerStinger
             typeof(ProfessionSkill).GetField("targetAchievement", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(professionSkill_PowerStinger,
@@ -123,27 +137,7 @@ namespace StingerReadded
                 }
             }
             progressionSlot_PowerStinger.Validate(ProfessionSkillTree.GetProfessionTree(ProgressionPath.Melee));
-            progressionSlots.Add(progressionSlot_PowerStinger);
-        }
-
-        private void _AddProgressionSlots()
-        {
-            foreach (ProgressionSlot progressionSlot in progressionSlots)
-            {
-                ProfessionSkillTree professionSkillTree = ProfessionSkillTree.GetProfessionTree(progressionSlot.Path);
-
-                Dictionary<uint, ProgressionSlot> slotMap = (Dictionary<uint, ProgressionSlot>)professionSkillTree.GetType().GetField("slotMap", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(professionSkillTree);
-                slotMap[progressionSlot.Hash] = progressionSlot;
-                professionSkillTree.Slots.Add(progressionSlot);
-            }
-        }
-
-        private void _AddInherits()
-        {
-            foreach (ProgressionSlot progressionSlot in progressionSlots)
-            {
-                progressionSlot.AddInherit(ProfessionSkillTree.GetProfessionTree(progressionSlot.Path));
-            }
+            CustomSkillsAPI.Core.progressionSlots.Add(progressionSlot_PowerStinger);
         }
     }
 }
