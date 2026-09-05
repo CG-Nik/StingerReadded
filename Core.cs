@@ -1,5 +1,4 @@
 ﻿using Alta;
-using Alta.Inventory;
 using CustomSkillsAPI;
 using MelonLoader;
 using MelonLoader.Utils;
