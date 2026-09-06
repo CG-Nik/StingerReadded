@@ -16,10 +16,10 @@ namespace StingerReadded
         {
             LoggerInstance.Msg("Initialized.");
 
-            CustomSkillsAPI.Core.SetUpProgressionSlots += _SetUpProgressionSlots;
+            CustomSkillsAPI.Core.SetUpProgressionSlots += SetUpProgressionSlots;
         }
 
-        private void _SetUpProgressionSlots()
+        private void SetUpProgressionSlots()
         {
             AssetBundle assetBundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory, "StingerReadded/AssetBundles/!stingerreadded"));
 
@@ -37,13 +37,6 @@ namespace StingerReadded
             typeof(PickupBasedSkill).GetField("inputStructure", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit, 
                 typeof(PickupBasedSkill).GetField("inputStructure", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerStinger) // this is HandOnSideStructure
             );
-            typeof(ProfessionSkill).GetField("practiceGlyphSprites", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit, 
-                new Sprite[2]
-                {
-                    ((Sprite[])typeof(ProfessionSkill).GetField("practiceGlyphSprites", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerStinger))[0], // this is Glyph_Ability_HoldSideBack
-                    ((Sprite[])typeof(ProfessionSkill).GetField("practiceGlyphSprites", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerHit))[1] // this is Glyph_AbilityHitTrigger
-                }
-            );
             typeof(PickupBasedSkill).GetField("hitPositionEffect", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(sidePowerHit,
                 typeof(PickupBasedSkill).GetField("hitPositionEffect", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerHit)
             );
@@ -51,41 +44,24 @@ namespace StingerReadded
                 typeof(PickupBasedSkill).GetField("hitPositionAndBladeAlignedEffect", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerHit)
             );
 
-            CustomSkillsAPI.Core.RegisterProfessionSkill(professionSkill_SidePowerHit);
-            ProgressionSlot progressionSlot_SidePowerHit = new(professionSkill_SidePowerHit);
-            foreach (var fieldInfo in progressionSlot_SidePowerHit.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
-            {
-                switch (fieldInfo.Name)
-                {
-                    case "name":
-                        fieldInfo.SetValue(progressionSlot_SidePowerHit, "Side Power Hit");
-                        break;
-                    case "cost":
-                        fieldInfo.SetValue(progressionSlot_SidePowerHit, 1u);
-                        break;
-                    case "dependencies":
-                        fieldInfo.SetValue(progressionSlot_SidePowerHit, new List<uint>([7141u]));
-                        break;
-                    case "hash":
-                        fieldInfo.SetValue(progressionSlot_SidePowerHit, 51077u);
-                        break;
-                    case "position":
-                        fieldInfo.SetValue(progressionSlot_SidePowerHit, new Vector3(0, 0.1f, 0.1f));
-                        break;
-                    case "slotIcon":
-                        Texture2D texture = null;
-                        if (assetBundle)
-                        {
-                            texture = assetBundle.LoadAsset<Texture2D>("SidePowerHitSlotIcon.png");
-                        }
-                        fieldInfo.SetValue(progressionSlot_SidePowerHit, texture);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            progressionSlot_SidePowerHit.Validate(ProfessionSkillTree.GetProfessionTree(ProgressionPath.Melee));
-            CustomSkillsAPI.Core.progressionSlots.Add(progressionSlot_SidePowerHit);
+            CustomSkillsAPI.Core.AddProfessionSkill(
+                sidePowerHit,
+                [
+                    ((Sprite[])typeof(ProfessionSkill).GetField("practiceGlyphSprites", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerStinger))[0], // this is Glyph_Ability_HoldSideBack
+                    ((Sprite[])typeof(ProfessionSkill).GetField("practiceGlyphSprites", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(powerHit))[1] // this is Glyph_AbilityHitTrigger
+                ]
+            );
+
+            CustomSkillsAPI.Core.AddProgressionSlot(
+                sidePowerHit,
+                "Side Power Hit",
+                1u,
+                new List<uint>([7141u]),
+                51077u,
+                new Vector3(0, 0.1f, 0.1f),
+                ProgressionPath.Melee,
+                assetBundle.LoadAsset<Texture2D>("SidePowerHitSlotIcon.png")
+            );
 
             // STINGER
             //
@@ -103,40 +79,16 @@ namespace StingerReadded
             GameObject stingerTargetOrb = (prefab as SkillHitTarget).gameObject;
             stingerTargetOrb.transform.Find("Orb windows").gameObject.SetActive(true);
 
-            ProgressionSlot progressionSlot_PowerStinger = new(professionSkill_PowerStinger);
-            foreach (var fieldInfo in progressionSlot_PowerStinger.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
-            {
-                switch (fieldInfo.Name)
-                {
-                    case "name":
-                        fieldInfo.SetValue(progressionSlot_PowerStinger, "Power Stinger Readded");
-                        break;
-                    case "cost":
-                        fieldInfo.SetValue(progressionSlot_PowerStinger, 1u);
-                        break;
-                    case "dependencies":
-                        fieldInfo.SetValue(progressionSlot_PowerStinger, new List<uint>([51077u])); // this is SidePowerHit
-                        break;
-                    case "hash":
-                        fieldInfo.SetValue(progressionSlot_PowerStinger, 60199u);
-                        break;
-                    case "position":
-                        fieldInfo.SetValue(progressionSlot_PowerStinger, new Vector3(0, 0.1f, 0.3f));
-                        break;
-                    case "slotIcon":
-                        Texture2D texture = null;
-                        if (assetBundle)
-                        {
-                            texture = assetBundle.LoadAsset<Texture2D>("StingerSlotIcon.png");
-                        }
-                        fieldInfo.SetValue(progressionSlot_PowerStinger, texture);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            progressionSlot_PowerStinger.Validate(ProfessionSkillTree.GetProfessionTree(ProgressionPath.Melee));
-            CustomSkillsAPI.Core.progressionSlots.Add(progressionSlot_PowerStinger);
+            CustomSkillsAPI.Core.AddProgressionSlot(
+                powerStinger,
+                "Power Stinger Readded",
+                1u,
+                new List<uint>([51077u]),
+                60199u,
+                new Vector3(0, 0.1f, 0.3f),
+                ProgressionPath.Melee,
+                assetBundle.LoadAsset<Texture2D>("StingerSlotIcon.png")
+            );
         }
     }
 }
