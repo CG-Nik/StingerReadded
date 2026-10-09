@@ -1,7 +1,6 @@
 ﻿using Alta;
 using CustomSkillsAPI;
 using MelonLoader;
-using MelonLoader.Utils;
 using System.Reflection;
 using UnityEngine;
 
@@ -21,8 +20,12 @@ namespace StingerReadded
 
         private void SetUpProgressionSlots()
         {
-            AssetBundle assetBundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory, "StingerReadded/AssetBundles/!stingerreadded"));
-
+            AssetBundle assetBundle;
+            using (System.IO.Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("StingerReadded.AssetBundles.!stingerreadded"))
+            {
+                assetBundle = AssetBundle.LoadFromStream(stream);
+            }
+            
             // SIDE POWER HIT
             //
             ProfessionSkill professionSkill_SidePowerHit = assetBundle.LoadAsset<ProfessionSkill>("Side Power Hit.asset");
