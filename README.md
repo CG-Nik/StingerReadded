@@ -10,14 +10,3 @@ Effectively, this mod makes Stinger obtainable in normal gameplay, as if it were
 It also adds a new skill, Side Power Hit, that functions as the prerequisite for Stinger.  Side Power Hit is an alternate version of Power Hit that does more damage, but requires that you charge it up like Stinger.  
 
 This is an unofficial, fan-made mod for A Township Tale. This mod is not affiliated with or endorsed by the owners or developers of A Township Tale.  
-
-### Downloading
-- Download StingerReadded.zip off of the most recent release.  
-- Extract StingerReadded.zip, and place the resulting StingerReadded folder into the Mods folder.  
-- Download CustomSkillsAPI.dll from https://github.com/CG-Nik/CustomSkillsAPI and place it into the Mods folder.  
-- (If downloading this mod on a Client) Download HandOnSideStructurePatch.dll from https://github.com/CG-Nik/HandOnSideStructurePatch and place it into the Mods folder.  
-> [!NOTE]
-> StingerReadded.zip is NOT nested, you need to place the StingerReadded folder itself into the Mods folder, not the files found inside of it.
-
-After downloading this mod properly, a client's mod folder should include StingerReadded (folder), CustomSkillsAPI.dll, and HandOnSideStructurePatch.dll.  
-A server's mod folder should include StingerReadded (folder) and CustomSkillsAPI.dll.  
